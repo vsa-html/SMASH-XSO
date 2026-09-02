@@ -1,6 +1,5 @@
-# SMASH-XSO
-Kode DDOS berbagai layer mampu untuk melumpuhkan server berberapa saat
-# 🔥 SMASH XSO — 7+ Layer DDoS Ultimate
+
+# SMASH XSO — 7+ Layer DDoS
 
 **SMASH XSO** adalah alat uji penetrasi (penetration testing) yang dirancang untuk mensimulasikan serangan DDoS (Distributed Denial of Service) dengan **9 metode serangan** berbeda, mencakup lapisan 3 hingga 7. Script ini hanya untuk tujuan edukasi dan pengujian keamanan pada sistem yang kamu miliki atau dengan izin tertulis dari pemilik sistem.
 
@@ -28,8 +27,6 @@ Kode DDOS berbagai layer mampu untuk melumpuhkan server berberapa saat
 ---
 
 ## 🛠️ Instalasi & Penggunaan
-
-### 1. Clone Repository
 ```bash
 git clone https://github.com/username-kamu/nama-repo.git
 cd nama-repo
