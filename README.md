@@ -31,6 +31,6 @@
 pkg update && pkg upgrade -y
 pkg install python git openssl-tool -y
 pip install requests
-git clone https://github.com/username-kamu/nama-repo.git
-cd nama-repo
+git clone https://github.com/vsa-html/SMASH-XSO.git
+cd SMASH-XSO
 python smash.py
